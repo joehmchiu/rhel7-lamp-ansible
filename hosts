@@ -1,0 +1,8 @@
+[webservers]
+aws
+
+[dbservers]
+aws
+
+[common]
+aws
