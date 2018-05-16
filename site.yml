@@ -1,18 +1,26 @@
 ---
 # This playbook deploys the whole application stack in this site.
 
+- name: rollback before to go LAMP installation
+  hosts: undo
+  user: ec2-user
+  become: yes
+
+  roles:
+    - undo
+
 - name: apply common configuration to all nodes
   hosts: common
+  user: ec2-user
   become: yes
-  become_user: root
 
   roles:
     - common
 
 - name: configure and deploy the webservers and application code
   hosts: webservers
+  user: ec2-user
   become: yes
-  become_user: root
 
   roles:
     - web
@@ -21,7 +29,6 @@
   hosts: dbservers
   user: ec2-user
   become: yes
-#   become_user: root
 
   roles:
     - db

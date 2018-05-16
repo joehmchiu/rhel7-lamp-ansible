@@ -18,10 +18,10 @@
   notify:
   - restart mariadb
 
-- name: Create Mysql option file
-  template: src=.my.cnf.j2 dest=~/.my.cnf mode=0600
-  notify:
-  - restart mariadb
+# - name: Create Mysql option file
+#   template: src=.my.cnf.j2 dest=~/.my.cnf mode=0600
+#   notify:
+#   - restart mariadb
 
 - name: Create MariaDB log file
   file: path=/var/log/mysqld.log state=touch owner=mysql group=mysql mode=0775
@@ -30,7 +30,6 @@
   file: path=/var/run/mysqld state=directory owner=mysql group=mysql mode=0775
 
 - name: Start MariaDB Service
-#   ignore_errors: yes
   service: name=mariadb state=started enabled=yes
 
 - name: Start firewalld
@@ -39,10 +38,59 @@
 - name: insert firewalld rule
   firewalld: port={{ mysql_port }}/tcp permanent=true state=enabled immediate=yes
 
-- name: Create Application Database
-#   ignore_errors: yes
-  mysql_db: name={{ dbname }} state=present
+# - name: Create Application Database
+# #   ignore_errors: yes
+#   mysql_db: name={{ dbname }} state=present
+# 
+- name: Set root user password
+  # If .my.cnf already exists, this will cause an mysql-root-password update.
+  ignore_errors: yes
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    check_implicit_admin: true
+
+- name: Create Option .my.cnf
+  template:
+   src: "client.my.cnf.j2"
+   dest: "~/.my.cnf"
+   owner: root
+   group: root
+   mode: 0600
+
+- name: Start MariaDB Service
+  service: name=mariadb state=started enabled=yes
+
+# mysql security settings
+- name: MySQL - Delete anonymous mysql user
+  mysql_user:
+    name: "" 
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: MySQL - Update mysql root passwd
+  mysql_user:
+    name: root 
+    host: "{{item}}" 
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  with_items:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: Removes all anonymous user accounts
+  mysql_user:
+    name: ''
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    host_all: yes
+    state: absent
 
 - name: Create Application DB User
-#   ignore_errors: yes
-  mysql_user: name={{ dbuser }} password={{ upassword }} priv=*.*:ALL host='%' state=present
+  mysql_user: login_user=root login_password={{ mysql_root_password }} name={{ dbuser }} password={{ upassword }} priv=*.*:ALL host='%' state=present
+
+

@@ -2,5 +2,17 @@
 # Variables listed here are applicable to all host groups
 
 httpd_port: 80
-ntpserver: 192.168.1.2
+ntpserver: pool.ntp.org
+# ntpserver: 192.168.1.2
 repository: https://github.com/joehmchiu/web-test-lamp.git
+
+# create migration archives
+target_dir: /opt/migration
+www_dir: /var/www
+
+# packing / unpacking datbase dump 
+# hostname: localhost
+# mysql_user: root
+# mysql_password: passw0rd
+# database_dump: all
+

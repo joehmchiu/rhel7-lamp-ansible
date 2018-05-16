@@ -1,6 +1,11 @@
 ---
 # This playbook contains common plays that will be run on all nodes.
 
+- name: install the 'Development tools' package group
+  yum:
+    name: "@Development tools"
+    state: present
+
 - name: Install ntp
   yum: name=ntp state=present
   tags: ntp
